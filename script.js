@@ -1,8 +1,6 @@
-// API configuration
 const apiKey = "ee663bb479224528b1261446252408"; 
 const baseUrl = "https://api.weatherapi.com/v1";
 
-// DOM elements
 const usernameModal = new bootstrap.Modal(document.getElementById('usernameModal'));
 const mainContent = document.getElementById('mainContent');
 const userAvatar = document.getElementById('userAvatar');
@@ -11,7 +9,6 @@ const searchForm = document.getElementById('searchForm');
 const searchInput = document.getElementById('searchInput');
 const changeUserBtn = document.getElementById('changeUser');
 
-// Show modal on page load
 window.addEventListener('DOMContentLoaded', () => {
     const savedUsername = localStorage.getItem('weatherAppUsername');
     if (savedUsername) {
@@ -23,7 +20,6 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Save username
 document.getElementById('saveUsername').addEventListener('click', () => {
     const username = document.getElementById('usernameInput').value.trim();
     if (username) {
@@ -35,20 +31,17 @@ document.getElementById('saveUsername').addEventListener('click', () => {
     }
 });
 
-// Change user
 changeUserBtn.addEventListener('click', () => {
     localStorage.removeItem('weatherAppUsername');
     mainContent.style.display = 'none';
     usernameModal.show();
 });
 
-// Set username in UI
 function setUsername(username) {
     userAvatar.textContent = username.charAt(0).toUpperCase();
     welcomeText.textContent = `Welcome, ${username}`;
 }
 
-// Search form handler
 searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const location = searchInput.value.trim();
@@ -58,7 +51,6 @@ searchForm.addEventListener('submit', (e) => {
     }
 });
 
-// Location dropdown handlers
 document.querySelectorAll('.dropdown-item[data-city]').forEach(item => {
     item.addEventListener('click', (e) => {
         e.preventDefault();
@@ -66,10 +58,8 @@ document.querySelectorAll('.dropdown-item[data-city]').forEach(item => {
     });
 });
 
-// Fetch weather data
 async function getWeather(location) {
     try {
-        // Show loading state
         document.getElementById('currentCity').textContent = "Loading...";
         
         const response = await fetch(`${baseUrl}/forecast.json?key=${apiKey}&q=${location}&days=5`);
@@ -80,10 +70,8 @@ async function getWeather(location) {
         const data = await response.json();
         console.log("Weather Data:", data);
         
-        // Update UI with current weather
         updateCurrentWeather(data);
         
-        // Update UI with forecast
         updateForecast(data);
         
     } catch (error) {
@@ -93,11 +81,9 @@ async function getWeather(location) {
     }
 }
 
-// Update current weather UI
 function updateCurrentWeather(data) {
     const { location, current } = data;
     
-    // Location and date
     document.getElementById('currentCity').textContent = `${location.name}, ${location.country}`;
     document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
         weekday: 'long', 
@@ -106,14 +92,11 @@ function updateCurrentWeather(data) {
         day: 'numeric' 
     });
     
-    // Temperature and condition
     document.getElementById('currentTemp').textContent = `${current.temp_c}°C`;
     
-    // Handle missing condition text
     const conditionText = current.condition ? current.condition.text : "Data not available";
     document.getElementById('weatherCondition').textContent = conditionText;
     
-    // Set appropriate weather icon
     const weatherIcon = document.getElementById('weatherIcon');
     if (current.condition && current.condition.text.toLowerCase().includes('sun')) {
         weatherIcon.className = 'fas fa-sun';
@@ -127,39 +110,31 @@ function updateCurrentWeather(data) {
         weatherIcon.className = 'fas fa-cloud-sun';
     }
     
-    // Wind information
     document.getElementById('windInfo').textContent = `${current.wind_kph} km/h`;
     document.getElementById('windDegree').textContent = `${current.wind_degree}°`;
     
-    // Other details
     document.getElementById('humidity').textContent = `${current.humidity}%`;
     document.getElementById('cloud').textContent = `${current.cloud}%`;
     document.getElementById('pressure').textContent = `${current.pressure_mb} hPa`;
     
-    // Astronomy (from forecast for today)
     const { astro } = data.forecast.forecastday[0];
     document.getElementById('sunrise').textContent = astro.sunrise;
     document.getElementById('sunset').textContent = astro.sunset;
     
-    // Today's max and min temp
     const { day } = data.forecast.forecastday[0];
     document.getElementById('maxTemp').textContent = `${day.maxtemp_c}°C`;
     document.getElementById('minTemp').textContent = `${day.mintemp_c}°C`;
     
-    // Update hourly forecast
     updateHourlyForecast(data.forecast.forecastday[0].hour);
 }
 
-// Update hourly forecast
 function updateHourlyForecast(hourlyData) {
     const hourlyForecast = document.getElementById('hourlyForecast');
     hourlyForecast.innerHTML = '';
     
-    // Get current hour
     const now = new Date();
     const currentHour = now.getHours();
     
-    // Show next 12 hours
     for (let i = currentHour; i < currentHour + 12; i++) {
         const hour = i % 24;
         const hourData = hourlyData[hour];
@@ -175,7 +150,6 @@ function updateHourlyForecast(hourlyData) {
         hourIcon.className = 'my-2';
         
         const icon = document.createElement('i');
-        // Set default icon
         icon.className = 'fas fa-cloud-sun';
         
         const hourTemp = document.createElement('div');
@@ -196,7 +170,6 @@ function updateHourlyForecast(hourlyData) {
     }
 }
 
-// Update 5-day forecast
 function updateForecast(data) {
     const forecastContainer = document.getElementById('fiveDayForecast');
     forecastContainer.innerHTML = '';
@@ -225,7 +198,6 @@ function updateForecast(data) {
     });
 }
 
-// Initialize with default location if user already exists
 const savedUsername = localStorage.getItem('weatherAppUsername');
 if (savedUsername) {
     setUsername(savedUsername);
